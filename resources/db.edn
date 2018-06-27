@@ -1,0 +1,15 @@
+{:postgresql #profile {:default {:hostname "127.0.0.1"
+                                 :port 5432
+                                 :database "documents_index_test"
+                                 :user "postgres"
+                                 :password "postgres"}
+                       :staging {:hostname "staging-url"
+                                 :port 5432
+                                 :database "documents_index_staging"
+                                 :user "user"
+                                 :password "password"}
+                       :production {:hostname "production-url"
+                                    :port 5432
+                                    :database "documents_index_production"
+                                    :user "user"
+                                    :password "password"}}}
