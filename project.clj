@@ -17,4 +17,5 @@
                  [com.layerware/hugsql "0.4.8"]]
   :main search-engine-clj.core
   :uberjar-name "search-engine-standalone.jar"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[ring-mock/ring-mock "0.1.5"]]}})

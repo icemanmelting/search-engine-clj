@@ -4,7 +4,7 @@ This project was created to build a small search engine. It allows to query docu
 
 # Usage
 
-In order to use, first you need to deploy a local postgres instance, and create a database called `search_engine_test`.
+In order to use, first you need to deploy a local postgres instance, and create a database called `documents_index_test`.
 
 After creation, run `postgresql-schema.sql` to deploy the schema needed. You can also check `dev-seed.sql`, to check the seed data,
 used to create a simple user(user creation routes were not added due to time constraints) and the first document.
