@@ -1,6 +1,6 @@
 (ns search-engine-clj.web-search-test
   (:require [clojure.test :refer :all]
-            [search-engine-clj.db.postgresql :refer [db]]
+            [search-engine-clj.db.postgresql :refer [db def-db-fns]]
             [hugsql.core :refer [db-run]]
             [search-engine-clj.web-setup :refer :all])
   (:import (java.util Date)))
@@ -11,20 +11,31 @@
 
 (def ^:private id3 "doc3")
 
+(def ^:private test-id "id-test")
+
+(def ^:private non-existing-id "non-id")
+
+(def ^:private test-content "This is a test")
+
+(def ^:private owner "foo@bar.com")
+
 (def ^:private content1 "I really like bananas, apples not so much")
 
 (def ^:private content2 "I dont like bananas, apples so and so")
 
 (def ^:private content3 "this is updated like bananas")
 
+(def-db-fns "documents.sql")
+
 (defn- setup-session []
   (db-run db (str "INSERT INTO users (login, password, salt) VALUES"
-                  "('foo@bar.com', '3bb95188c01763e81875ce9644f496a4e3f98d9eb181c5f128ba32a01b62b6de', 'bar');"))
+                  "('" owner "', '3bb95188c01763e81875ce9644f496a4e3f98d9eb181c5f128ba32a01b62b6de', 'bar');"))
   (db-run db (str "INSERT INTO sessions (id, login, seen) VALUES"
-                  "('00000000-0000-0000-0000-000000000000', 'foo@bar.com', now());")))
+                  "('00000000-0000-0000-0000-000000000000', '" owner "', now());")))
 
 (defn- new-document [id content]
-  (let [query "INSERT INTO documents(id, owner_id, content, created_at) VALUES (:id, 'foo@bar.com', :content, NOW());"]
+  (let [query (str "INSERT INTO documents(id, owner_id, content, created_at) VALUES"
+                   "(:id, '" owner "', :content, NOW());")]
     (db-run db query {:id id
                       :content content})))
 
@@ -120,3 +131,91 @@
     (let [status (-> @resp :status)]
       (is (= 403 status)))))
 
+(deftest test-creation
+
+  (testing "Non existing document"
+
+    (do (set-authorized-requests!)
+        (web-run :post "/_index" {:id test-id
+                                  :content test-content}))
+
+    (let [[{:keys [id content]} err] (get-document-by-id db {:id test-id
+                                                             :owner owner})]
+      (is (nil? err))
+
+      (are [x y] (= x y)
+                 test-id id
+                 test-content content)))
+
+  (testing "Upsert existing document"
+
+    (let [[{:keys [id content]} err] (get-document-by-id db {:id id1
+                                                             :owner owner})]
+      (is (nil? err))
+
+      (are [x y] (= x y)
+                 id1 id
+                 content1 content)
+
+      (do (set-authorized-requests!)
+          (web-run :post "/_index" {:id id1
+                                    :content test-content}))
+
+      (let [[{:keys [id content]} err] (get-document-by-id db {:id id1
+                                                               :owner owner})]
+        (is (nil? err))
+
+        (are [x y] (= x y)
+                   id1 id
+                   test-content content))))
+
+  (testing "unauthorized request"
+
+    (do (set-unauthorized-requests!)
+        (web-run :post "/_index" {:id id1
+                                  :content test-content}))
+
+    (let [status (-> @resp :status)]
+      (is (= 403 status)))))
+
+
+(deftest test-deletion
+
+  (testing "delete existing document"
+
+    (let [[{:keys [id content]} err] (get-document-by-id db {:id id1
+                                                             :owner owner})]
+      (is (nil? err))
+
+      (are [x y] (= x y)
+                 id1 id
+                 content1 content)
+
+      (do (set-authorized-requests!)
+          (web-run :delete (str "/_search/" id1)))
+
+      (let [[{:keys [id content]} err] (get-document-by-id db {:id id1
+                                                               :owner owner})]
+        (is (nil? err))
+
+        (is (nil? content)))))
+
+  (testing "delete non existing document"
+
+    (do (set-authorized-requests!)
+        (web-run :delete (str "/_search/" non-existing-id)))
+
+    (let [status (-> @resp :status)
+          message (-> (extract-body) :api_message)]
+
+      (are [expected result] (= expected result)
+                             status 422
+                             (str "Document with id " non-existing-id " not found") message)))
+
+  (testing "unauthorized request"
+
+    (do (set-unauthorized-requests!)
+        (web-run :delete (str "/_search/" non-existing-id)))
+
+    (let [status (-> @resp :status)]
+      (is (= 403 status)))))
