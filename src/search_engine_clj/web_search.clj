@@ -6,7 +6,7 @@
             [clojure.tools.logging :as log]))
 
 (def ^:private document-fmt {:id non-empty-str
-                                :content non-empty-str})
+                             :content non-empty-str})
 
 (def ^:private query-fmt {:query non-empty-str})
 
@@ -63,12 +63,19 @@
 
 (defn delete-document [{{:keys [id]} :params {:keys [login]} :session}]
   (if id
-    (let [[doc err] (delete-document-by-id db {:id id :owner login})]
+    (let [[doc err] (get-document-by-id db {:id id :owner login})]
       (if-not err
-        (one :ok {:id id})
+        (if doc
+          (let [[_ err] (delete-document-by-id db {:id id :owner login})]
+            (if-not err
+              (one :ok {:id id})
+              (do
+                (log/error err (str "Problem deleting document with id: " id))
+                (error :unprocessable-entity (str "Problem deleting document with id: " id)))))
+          (error :unprocessable-entity (str "Document with id " id " not found")))
         (do
-          (log/error err (str "Problem deleting document with id: " id))
-          (error :unprocessable-entity (log/error err (str "Problem deleting document with id: " id))))))
+          (log/error err "Problem retrieving document with id" id)
+          (error :unprocessable-entity "You need to supply an id"))))
     (do
       (log/error "You need to supply an id")
       (error :unprocessable-entity "You need to supply an id"))))
