@@ -124,6 +124,12 @@ Here the response should look something like this:
  }
  ```
 
+# Possible future improvements
+
+Adding support for caching using Redis - This will enable faster results for documents indexing/search;
+Adding support for multiple command types in the same query string (idea is already in the works);
+Maybe using something else faster than regex, and without the need of holding a copy of the content on the server side (binary search?? maybe?).
+
 # License
 
 Copyright © 2018 FIXME
