@@ -93,7 +93,7 @@ Here the response should look something like this:
  Or by query string. To query by query string we need to use a POST method, and specify the query string in the body:
  
  `curl -X POST  localhost:3000/_search \
-      -d '{ "query" : "banana*" }'`
+      -d '{ "query" : "rea*" }'`
  
  As in this situation, the query can originate multiple results, the api result will look something like this:
  
@@ -126,9 +126,9 @@ Here the response should look something like this:
 
 # Possible future improvements
 
-Adding support for caching using Redis - This will enable faster results for documents indexing/search;
-Adding support for multiple command types in the same query string (idea is already in the works);
-Maybe using something else faster than regex, and without the need of holding a copy of the content on the server side (binary search?? maybe?).
+- Adding support for caching using Redis - This will enable faster results for documents indexing/search;
+- Adding support for multiple command types in the same query string (idea is already in the works);
+- Maybe using something else faster than regex, and without the need of holding a copy of the content on the server side (binary search?? maybe?).
 
 # License
 
