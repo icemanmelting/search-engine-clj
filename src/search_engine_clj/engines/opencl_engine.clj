@@ -25,13 +25,13 @@
 
 (def ^:private devices-count (count opencl-devices-complete))
 
-(defn- search-strings [pattern strs context kernel cqueue]
+(defn- search-strings [pattern strs context global-size local-size kernel cqueue]
   (let [text-array (byte-array (-> strs (s/join) (.getBytes) seq))
         chars-per-item (int-array (map count strs))
         pattern-array (byte-array (-> pattern (.getBytes) seq))
         result-array-size (count strs)
         result-array (int-array result-array-size)
-        work-sizes (work-size [result-array-size] [result-array-size])]
+        work-sizes (work-size [global-size] [local-size])]
     (with-release [text-buffer (cl-buffer context (alength text-array) :write-only)
                    pattern-buffer (cl-buffer context (alength pattern-array) :write-only)
                    per-item-buffer (cl-buffer context (* 4 (alength chars-per-item)) :write-only)
@@ -65,8 +65,8 @@
 
 (defn search-pattern [strs pattern]
   (let [strs (split-collection strs)]
-    (flatten (map #(let [{:keys [context kernel max-compute-units command-queue]} %2]
-                     (search-strings pattern %1 context kernel command-queue)) strs (take (count strs) opencl-devices-complete)))))
+    (flatten (map #(let [{:keys [context kernel global-size local-size command-queue]} %2]
+                     (search-strings pattern %1 context global-size local-size kernel command-queue)) strs (take (count strs) opencl-devices-complete)))))
 
 (def ^:private and-pattern (re-pattern " AND "))
 

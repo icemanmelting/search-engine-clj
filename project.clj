@@ -15,7 +15,8 @@
                  [ring-cors "0.1.9"]
                  [org.postgresql/postgresql "42.1.4"]
                  [com.layerware/hugsql "0.4.8"]
-                 [uncomplicate/clojurecl "0.9.0"]]
+                 [uncomplicate/clojurecl "0.9.0"]
+                 [criterium "0.4.4"]]
   :main search-engine-clj.core
   :uberjar-name "search-engine-standalone.jar"
   :profiles {:uberjar {:aot :all}
