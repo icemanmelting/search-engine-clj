@@ -1,0 +1,3 @@
+{:engine #profile {:default {:type :opencl}
+                       :staging {:type :opencl}
+                       :production {:type :opencl}}}
