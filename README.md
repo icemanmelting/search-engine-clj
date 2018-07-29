@@ -20,8 +20,9 @@ since usually the db is running on a completely different machine, and configure
 
 This search engine allows the usage of multiple devices to run the searches on the documents. Currently 2 different search engines are supported.
 
-1 - Regex - Simple regex mapping of the documents, ran on the cpu;
-2 - OpenCL - Search mapping running against all compatible devices on the server.
+- Regex - Simple regex mapping of the documents, ran on the cpu;
+
+- OpenCL - Search mapping running against all compatible devices on the server.
 
 The regex engine is a simple regex comparison running for each document at a time. 
 Meanwhile, the OpenCL engine, splits the workload, and runs each document against a single work unit on a single device. 
@@ -136,6 +137,19 @@ Here the response should look something like this:
          }
      ]
  }
+ ```
+
+# Possible future improvements
+
+- Adding support for caching using Redis - This will enable faster results for documents indexing/search;
+- Adding support for multiple command types in the same query string (idea is already in the works);
+
+# License
+
+Copyright © 2018 FIXME
+
+Distributed under the Eclipse Public License either version 1.0 or (at
+your option) any later version.
  ```
 
 # Possible future improvements
