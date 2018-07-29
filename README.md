@@ -16,6 +16,20 @@ is that since the pg instance will be running outside the container, we will nee
 This can be solved by adding `--net="host"` to the docker run command, or simply by using an external database. Note that this wouldn't be a problem for a staging or production environments,
 since usually the db is running on a completely different machine, and configured accordingly in the `db.edn` file, located in the resources of the project.
 
+# Search Engines 
+
+This search engine allows the usage of multiple devices to run the searches on the documents. Currently 2 different search engines are supported.
+
+1 - Regex - Simple regex mapping of the documents, ran on the cpu;
+2 - OpenCL - Search mapping running against all compatible devices on the server.
+
+The regex engine is a simple regex comparison running for each document at a time. 
+Meanwhile, the OpenCL engine, splits the workload, and runs each document against a single work unit on a single device. 
+It scales to the next device if the number of documents is bigger than a single device can handle at once.
+
+Currently, if the number of documents is bigger than the sum of all the workgroups in all devices, 
+not all documents will get searched, the recursive algorithm,needs to be implemented still.
+
 # Sessions
 
 To create a session we need to send a post request to `http://localhost:8080/session`
@@ -128,7 +142,6 @@ Here the response should look something like this:
 
 - Adding support for caching using Redis - This will enable faster results for documents indexing/search;
 - Adding support for multiple command types in the same query string (idea is already in the works);
-- Maybe using something else faster than regex, and without the need of holding a copy of the content on the server side (binary search?? maybe?).
 
 # License
 
