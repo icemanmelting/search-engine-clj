@@ -20,35 +20,35 @@ __kernel void stringSearch(__global const char *text,
 
     int correctValues = 0;
 
-for (int i=start; i<end; i++) {
-   for(int y=0; y<patternSize; y++) {
+    for (int i=start; i<end; i++) {
+        for(int y=0; y<patternSize; y++) {
 
-        int pos = i+y;
+            int pos = i+y;
 
-        if (text[pos] == pattern[y]) {
+            if (text[pos] == pattern[y]) {
 
-            correctValues++;
-        } else {
+                correctValues++;
+            } else {
 
-            correctValues = 0;
-            i = pos;
+                correctValues = 0;
+                i = pos;
+                break;
+            }
+        }
+
+        if (correctValues == patternSize) {
             break;
         }
-   }
 
-   if (correctValues == patternSize) {
-      break;
-   }
+        if (correctValues < patternSize && ((end - i) < (patternSize - correctValues))) {
+            break;
+        }
+    }
 
-   if (correctValues < patternSize && ((end - i) < (patternSize - correctValues))) {
-      break;
-   }
-}
-
-if (correctValues == patternSize) {
-    result[gid] = 1;
-} else {
-    result[gid] = 0;
-}
+    if (correctValues == patternSize) {
+        result[gid] = 1;
+    } else {
+        result[gid] = 0;
+    }
 
 }

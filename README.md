@@ -21,13 +21,14 @@ since usually the db is running on a completely different machine, and configure
 This search engine allows the usage of multiple devices to run the searches on the documents. Currently 2 different search engines are supported.
 
 1 - Regex - Simple regex mapping of the documents, ran on the cpu;
-2 - OpenCL - Search mapping running agains all compatible devices on the server.
+2 - OpenCL - Search mapping running against all compatible devices on the server.
 
-The regex engine is a simple regex comparison running for each document at a time. Meanwhile, the OpenCL engine, splits the workload, and runs
-each document against a single work unit on a single device. It scales to the next device if the number of documents is bigger than a single device can handle at once.
+The regex engine is a simple regex comparison running for each document at a time. 
+Meanwhile, the OpenCL engine, splits the workload, and runs each document against a single work unit on a single device. 
+It scales to the next device if the number of documents is bigger than a single device can handle at once.
 
-Currently, if the number of documents is bigger than the sum of all the workgroups in all devices, not all documents will get searched, the recursive algorithm,
-needs to be implemented still.
+Currently, if the number of documents is bigger than the sum of all the workgroups in all devices, 
+not all documents will get searched, the recursive algorithm,needs to be implemented still.
 
 # Sessions
 
