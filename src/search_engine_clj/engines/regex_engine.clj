@@ -46,9 +46,6 @@
        (apply map #(not (and-loop %)))))
 
 (defmethod query-content :wildcard [content query-terms _]
-  (prn (->> query-terms
-            (map #(for [c content]
-                    (re-find (re-pattern %) c)))))
   (->> query-terms
        (map #(for [c content]
                (re-find (re-pattern %) c)))

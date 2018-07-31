@@ -12,4 +12,10 @@
                                     :port 5432
                                     :database "documents_index_production"
                                     :user "user"
-                                    :password "password"}}}
+                                    :password "password"}}
+ :redis #profile {:default {:host "127.0.0.1"
+                            :port 6379}
+                  :staging {:host "staging-host"
+                            :port 6379}
+                  :production {:host "production-host"
+                               :port 6379}}}

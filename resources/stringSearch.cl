@@ -5,9 +5,7 @@ __kernel void stringSearch(__global const char *text,
                            __global int *result) {
 
     int gid = get_global_id(0);
-
     int chars_in_current_item = chars_per_item[gid];
-
     int start = 0;
 
     if (gid > 0) {
@@ -26,10 +24,8 @@ __kernel void stringSearch(__global const char *text,
             int pos = i+y;
 
             if (text[pos] == pattern[y]) {
-
                 correctValues++;
             } else {
-
                 correctValues = 0;
                 i = pos;
                 break;
@@ -50,5 +46,4 @@ __kernel void stringSearch(__global const char *text,
     } else {
         result[gid] = 0;
     }
-
 }
