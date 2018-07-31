@@ -38,8 +38,6 @@ with the JSON body containing `login` which is the user login info, and `passwor
                     
 ```
 {
-    "api_status": 201,
-    "api_timestamp": "2018-06-28T13:48:21Z",
     "id": "cf1c4a12-36e7-443d-991a-e3aa1e4c955c",
     "login": "fabio@dias.com",
     "seen": "2018-06-28T13:48:21Z"
@@ -64,8 +62,6 @@ If successful, it will return the id of the created document in the response bod
 
 ```
 {
-    "api_status": 200,
-    "api_timestamp": "2018-06-28T13:46:33Z",
     "id": "doc1"
 }
 ```
@@ -80,8 +76,6 @@ If successful, it will return the id of the deleted document in the response bod
 
 ```
 {
-    "api_status": 200,
-    "api_timestamp": "2018-06-28T13:46:33Z",
     "id": "doc1"
 }
 ```
@@ -97,8 +91,6 @@ Here the response should look something like this:
 
 ```
 {
-    "api_status": 200,
-    "api_timestamp": "2018-06-28T13:46:00Z",
     "id": "doc1",
     "content": "I really like bananas, apples not so much",
     "created_at": "2018-06-28T13:29:53Z"
@@ -113,35 +105,22 @@ Here the response should look something like this:
  As in this situation, the query can originate multiple results, the api result will look something like this:
  
  ```
- {
-     "metadata": {
-         "more_results": false,
-         "next_offset": 2,
-         "count": 2,
-         "total": 2
-     },
-     "results": [
-         {
-             "api_status": 200,
-             "api_timestamp": "2018-06-28T13:32:31Z",
-             "id": "doc1",
-             "content": "I really like bananas, apples not so much",
-             "created_at": "2018-06-28T13:29:53Z"
-         },
-         {
-             "api_status": 200,
-             "api_timestamp": "2018-06-28T13:32:31Z",
-             "id": "doc3",
-             "content": "I really like oranges",
-             "created_at": "2018-06-28T13:29:53Z"
-         }
-     ]
- }
+ [
+  {
+      "id": "doc1",
+      "content": "I really like bananas, apples not so much",
+      "created_at": "2018-06-28T13:29:53Z"
+  },
+  {
+      "id": "doc3",
+      "content": "I really like oranges",
+      "created_at": "2018-06-28T13:29:53Z"
+  }
+  ]
  ```
 
 # Possible future improvements
 
-- Adding support for caching using Redis - This will enable faster results for documents indexing/search;
 - Adding support for multiple command types in the same query string (idea is already in the works);
 
 # License
@@ -151,12 +130,6 @@ Copyright © 2018 FIXME
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
  ```
-
-# Possible future improvements
-
-- Adding support for caching using Redis - This will enable faster results for documents indexing/search;
-- Adding support for multiple command types in the same query string (idea is already in the works);
-
 # License
 
 Copyright © 2018 FIXME
