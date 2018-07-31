@@ -1,4 +1,6 @@
 (ns search-engine-clj.response
+  (:require [cheshire.core :as json]
+            [ring.util.response :refer [content-type]])
   (:import (java.util Date)))
 
 (def codes
@@ -53,31 +55,28 @@
    :insufficient-storage 507
    :not-extended 510})
 
-(defn one
-  ([st ts d]
-   (apply array-map :api_status (or (codes st) st) :api_timestamp ts (apply concat d)))
+(defn json
+  ([st d h]
+   (let [response (cond-> {:status (or (st codes) 200)
+                           :body d}
+                    h (assoc :headers h))
+         json-response (update-in response [:body] json/generate-string)]
+     (content-type json-response "application/json; charset=utf-8")))
   ([st d]
-   (one st (Date.) d)))
+   (json st d nil)))
 
-(defn many
-  ([st ts col offset total]
-   (let [c (count col)
-         next (if offset (+ offset c))]
-     (array-map :metadata {:more_results (boolean (if next (> total next)))
-                           :next_offset (or next c)
-                           :count c
-                           :total (or total c)}
-                :results (map #(one st ts %) col))))
-  ([st col offset total]
-   (many st (Date.) col offset total))
-  ([st col]
-   (many st (Date.) col nil nil)))
+(defn plain-text
+  ([st d h]
+   (content-type (cond-> {:status (or (st codes) 200)
+                          :body d}
+                   h (assoc :headers h)) "text/plain"))
+  ([st d]
+   (plain-text st d nil)))
 
-(defn error [st m]
-  (one st {:api_message m}))
-
-(defn response [b]
-  {:body b :status (or (:api_status b) 200)})
-
-(defn render [h]
-  #(response(h %)))
+(defn error
+  ([st d h]
+   (cond-> {:status (or (st codes) 400)
+            :body d}
+     h (assoc :headers h)))
+  ([st d]
+   (error st d nil)))

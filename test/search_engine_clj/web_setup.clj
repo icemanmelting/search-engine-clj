@@ -28,4 +28,9 @@
   ([method uri] (web-run method uri nil)))
 
 (defn extract-body []
-  (json/decode (:body @resp) keyword))
+  (if-let [body (try (json/decode (:body @resp) keyword)
+                     (catch Exception _))]
+    (if (coll? body)
+      body
+      (first body))
+    (:body @resp)))

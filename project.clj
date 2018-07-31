@@ -15,6 +15,7 @@
                  [ring-cors "0.1.9"]
                  [org.postgresql/postgresql "42.1.4"]
                  [com.layerware/hugsql "0.4.8"]
+                 [com.taoensso/carmine "2.18.1"]
                  [uncomplicate/clojurecl "0.9.0"]
                  [criterium "0.4.4"]]
   :main search-engine-clj.core

@@ -1,3 +1,6 @@
-{:engine #profile {:default {:type :opencl}
-                       :staging {:type :opencl}
-                       :production {:type :opencl}}}
+{:engine #profile {:default {:type :regex
+                             :cache-ttl 60}
+                   :staging {:type :opencl
+                             :cache-ttl 60}
+                   :production {:type :opencl
+                                :cache-ttl 60}}}

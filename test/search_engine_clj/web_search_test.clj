@@ -1,6 +1,8 @@
 (ns search-engine-clj.web-search-test
   (:require [clojure.test :refer :all]
             [search-engine-clj.db.postgresql :refer [db def-db-fns]]
+            [search-engine-clj.db.redis :refer [wcar*]]
+            [taoensso.carmine :as car]
             [hugsql.core :refer [db-run]]
             [search-engine-clj.web-setup :refer :all])
   (:import (java.util Date)))
@@ -42,6 +44,12 @@
 (defn- truncate-session []
   (db-run db "TRUNCATE users CASCADE"))
 
+(defn- check-redis [id]
+  (is (wcar* (car/get id))))
+
+(defn clear-redis []
+  (wcar* (car/flushall)))
+
 (defn- populate-pg []
   (new-document id1 content1)
   (new-document id2 content2)
@@ -50,6 +58,7 @@
 (defn- web-search-fixture [f]
   (truncate-session)
   (setup-session)
+  (clear-redis)
   (populate-pg)
   (f))
 
@@ -62,6 +71,8 @@
     (do (set-authorized-requests!)
         (web-run :get (str "/_search/" id1)))
 
+    (check-redis id1)
+
     (is (= content1 (-> (extract-body) :content))))
 
   (testing "document research by AND"
@@ -69,7 +80,9 @@
     (do (set-authorized-requests!)
         (web-run :post "/_search" {:query "apples AND bananas"}))
 
-    (let [results (-> (extract-body) :results)
+    (check-redis "apples AND bananas")
+
+    (let [results (extract-body)
           ids-set (into #{} (map :id results))]
       (is (= 2 (count results)))
       (is (true? (every? true? (map #(contains? #{id1 id2} %) ids-set))))))
@@ -79,7 +92,9 @@
     (do (set-authorized-requests!)
         (web-run :post "/_search" {:query "apples OR updated"}))
 
-    (let [results (-> (extract-body) :results)
+    (check-redis "apples OR updated")
+
+    (let [results (extract-body)
           ids-set (into #{} (map :id results))]
       (is (= 3 (count results)))
       (is (true? (every? true? (map #(contains? #{id1 id2 id3} %) ids-set))))))
@@ -89,7 +104,7 @@
     (do (set-authorized-requests!)
         (web-run :post "/_search" {:query "-updated"}))
 
-    (let [results (-> (extract-body) :results)
+    (let [results (extract-body)
           ids-set (into #{} (map :id results))]
       (is (= 2 (count results)))
       (is (true? (every? true? (map #(contains? #{id1 id2} %) ids-set))))))
@@ -99,29 +114,12 @@
     (do (set-authorized-requests!)
         (web-run :post "/_search" {:query "bana*"}))
 
-    (let [results (-> (extract-body) :results)
+    (check-redis "bana*")
+
+    (let [results (extract-body)
           ids-set (into #{} (map :id results))]
       (is (= 3 (count results)))
       (is (true? (every? true? (map #(contains? #{id1 id2 id3} %) ids-set))))))
-
-  (testing "document research by EXACT"
-
-    (do (set-authorized-requests!)
-        (web-run :post "/_search" {:query "'bananas'"}))
-
-    (let [results (-> (extract-body) :results)
-          ids-set (into #{} (map :id results))]
-      (is (= 3 (count results)))
-      (is (true? (every? true? (map #(contains? #{id1 id2 id3} %) ids-set))))))
-
-  (testing "document research by EXACT no matches"
-
-    (do (set-authorized-requests!)
-        (web-run :post "/_search" {:query "'banana'"}))
-
-    (let [results (-> (extract-body) :results)
-          ids-set (into #{} (map :id results))]
-      (is (= 0 (count results)))))
 
   (testing "unauthorized request"
 
@@ -206,7 +204,7 @@
         (web-run :delete (str "/_search/" non-existing-id)))
 
     (let [status (-> @resp :status)
-          message (-> (extract-body) :api_message)]
+          message (extract-body)]
 
       (are [expected result] (= expected result)
                              status 422

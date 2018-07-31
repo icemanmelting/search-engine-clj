@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [schema.core :as sc]
             [search-engine-clj.validation :refer [validate humanize-error non-empty-str]]
-            [search-engine-clj.response :refer [response error one]]
+            [search-engine-clj.response :refer [error json]]
             [search-engine-clj.config :as config]
             [search-engine-clj.db.postgresql :refer [db def-db-fns uuid]])
   (:import (java.sql Timestamp)
@@ -29,7 +29,7 @@
     session))
 
 (defn find-one [{session :session}]
-  (one :ok session))
+  (json :ok session))
 
 (defn- touch
   ([id ts]
@@ -59,9 +59,9 @@
           (do
             (touch id)
             (handler (assoc r :session s)))
-          (response (error :authentication-timeout "Session expired")))
-        (response (error :forbidden "Login required")))
-      (response (error :forbidden "Login required")))))
+          (error :authentication-timeout "Session expired"))
+        (error :forbidden "Login required"))
+      (error :forbidden "Login required"))))
 
 (def ^:private login-fmt {:login non-empty-str :password non-empty-str})
 
@@ -73,7 +73,7 @@
           (let [id (uuid)
                 [result err] (create-session db {:id id :login l :oid (:oid u)})]
             (if-not err
-              (one :created (lookup id))
+              (json :created (lookup id))
               (error :unprocessable-entity (humanize-error err))))
           (error :forbidden "Incorrect credentials"))
         (error :forbidden "Incorrect credentials"))
@@ -82,5 +82,5 @@
 (defn destroy [{session :session}]
   (let [[result err] (kill (:id session))]
     (if-not err
-      (one :ok session)
+      (json :ok session)
       (error :unprocessable-entity (humanize-error err)))))
