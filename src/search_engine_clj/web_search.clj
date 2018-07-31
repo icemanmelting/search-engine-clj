@@ -33,9 +33,6 @@
   (log/error msg)
   (error :unprocessable-entity msg))
 
-(defn- remove-cache [id]
-  (wcar* (car/del id)))
-
 (defn find-document-by-id [{{:keys [id]} :params {:keys [login]} :session}]
   (if id
     (if-let [doc (wcar* (car/get id))]
