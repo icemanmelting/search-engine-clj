@@ -20,7 +20,7 @@
                   :access-control-allow-methods [:get :put :post :delete :options]))
 
 (defroutes web-search-routes
-  (GET ws/find-document-by-id-route [] (-> ws/find-document-by-id wrap-params retrieve-from-cache authorize))
+  (GET ws/find-document-by-id-route [] (-> ws/find-document-by-id wrap-params authorize))
   (DELETE ws/delete-document-route [] (-> ws/delete-document wrap-params delete-from-cache authorize))
   (POST ws/find-document-route [] (-> ws/find-document retrieve-from-cache authorize))
   (POST ws/upsert-document-route [] (-> ws/upsert-document wrap-params delete-from-cache authorize)))
