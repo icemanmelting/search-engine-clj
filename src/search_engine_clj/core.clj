@@ -4,8 +4,9 @@
             [ring.middleware.cors :as cors]
             [ring.middleware.json :as json]
             [ring.middleware.params :refer [wrap-params]]
-            [search-engine-clj.web-search :as ws]
+            [search-engine-clj.documents :as ws]
             [search-engine-clj.response :refer [error]]
+            [search-engine-clj.db.redis :refer [retrieve-from-cache delete-from-cache]]
             [search-engine-clj.sessions :refer [authorize] :as sessions])
   (:gen-class))
 
@@ -19,10 +20,10 @@
                   :access-control-allow-methods [:get :put :post :delete :options]))
 
 (defroutes web-search-routes
-  (GET ws/find-document-by-id-route [] (wrap-params ws/find-document-by-id))
-  (DELETE ws/delete-document-route [] (wrap-params ws/delete-document))
-  (POST ws/find-document-route [] ws/find-document)
-  (POST ws/upsert-document-route [] ws/upsert-document))
+  (GET ws/find-document-by-id-route [] (-> ws/find-document-by-id wrap-params retrieve-from-cache authorize))
+  (DELETE ws/delete-document-route [] (-> ws/delete-document wrap-params delete-from-cache authorize))
+  (POST ws/find-document-route [] (-> ws/find-document retrieve-from-cache authorize))
+  (POST ws/upsert-document-route [] (-> ws/upsert-document wrap-params delete-from-cache authorize)))
 
 (defroutes session-routes
   (GET "/session" [] (authorize sessions/find-one))
@@ -30,7 +31,7 @@
   (POST "/session" [] sessions/create))
 
 (defroutes app
-  (-> (routes session-routes (authorize web-search-routes)) wrap-json-body wrap-cors))
+  (-> (routes session-routes web-search-routes) wrap-json-body wrap-cors))
 
 (defn -main []
   (run-server app {:port 8080})

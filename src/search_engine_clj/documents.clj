@@ -1,4 +1,4 @@
-(ns search-engine-clj.web-search
+(ns search-engine-clj.documents
   (:require [search-engine-clj.db.postgresql :refer [db def-db-fns]]
             [search-engine-clj.response :refer [json error]]
             [search-engine-clj.engines.search :refer [search]]
@@ -33,9 +33,9 @@
   (log/error msg)
   (error :unprocessable-entity msg))
 
-(defn find-document-by-id [{{:keys [id]} :params {:keys [login]} :session}]
+(defn find-document-by-id [{{:keys [id]} :params {:keys [login]} :session doc :doc}]
   (if id
-    (if-let [doc (wcar* (car/get id))]
+    (if doc
       (json :ok doc)
       (let [[doc err] (get-document-by-id db {:id id :owner login})]
         (if-not err
@@ -47,11 +47,11 @@
           (handle-error (str err " Problem retrieving document with id: " id)))))
     (handle-error "You need to supply an id")))
 
-(defn find-document [{{:keys [query] :as body} :body {:keys [login]} :session}]
+(defn find-document [{{:keys [query] :as body} :body {:keys [login]} :session doc :doc}]
   (let [[_ err] (validate query-fmt body)]
     (if-not err
-      (if-let [results (seq (wcar* (car/get query)))]
-        (json :ok results)
+      (if doc
+        (json :ok doc)
         (let [[docs err] (get-all-documents-by-user db {:user login})]
           (if-not err
             (if (seq docs)
@@ -68,8 +68,7 @@
 (defn upsert-document [{{:keys [content id] :as body} :body {:keys [login]} :session}]
   (let [[_ err] (validate document-fmt body)]
     (if-not err
-      (let [_ (wcar* (car/del id))
-            [_ err] (insert-document db {:owner login
+      (let [[_ err] (insert-document db {:owner login
                                          :id id
                                          :content content})]
         (if-not err
@@ -82,8 +81,7 @@
     (let [[doc err] (get-document-by-id db {:id id :owner login})]
       (if-not err
         (if doc
-          (let [_ (wcar* (car/del id))
-                [_ err] (delete-document-by-id db {:id id :owner login})]
+          (let [[_ err] (delete-document-by-id db {:id id :owner login})]
             (if-not err
               (json :ok {:id id})
               (handle-error (str err "Problem deleting document with id: " id))))
